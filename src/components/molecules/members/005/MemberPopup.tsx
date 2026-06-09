@@ -6,6 +6,8 @@ import Image from 'next/image'
 
 import { createPortal } from 'react-dom'
 
+import { motion, useMotionValue, useVelocity, useTransform, useSpring } from 'framer-motion'
+
 import Instagram from '@/components/atoms/button/InstagramButtonLink'
 import LinkedInButtonLink from '@/components/atoms/button/LinkedInButtonLink'
 import SpotifyEmbed from '@/components/molecules/SpotifyEmbed'
@@ -23,7 +25,13 @@ type MemberPopupProps = {
 const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
   const audioRef = useRef<HTMLAudioElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const constraintsRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+
+  const x = useMotionValue(0)
+  const xVelocity = useVelocity(x)
+  const rotateVelocity = useTransform(xVelocity, [-800, 800], [-8, 8])
+  const smoothRotate = useSpring(rotateVelocity, { damping: 15, stiffness: 200 })
 
   useEffect(() => {
     const audio = audioRef.current
@@ -90,7 +98,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
 
   return createPortal(
     // PADA BAGIAN INI KAMU BOLEH MENGUBAH STYLE SESUKA HATI KAMU, TAPI JANGAN UBAH STRUKTUR DAN FUNGSI DARI KODE INI AGAR FUNGSI POPUP TETAP BERJALAN DENGAN BAIK
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div ref={constraintsRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <video
           ref={videoRef}
@@ -113,7 +121,19 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
         className="fixed inset-0 z-0"
       />
 
-      <div className="relative z-10 w-full max-w-3xl animate-[member-popup-show_300ms_ease-out]">
+      <motion.div
+        drag
+        style={{ x, rotate: smoothRotate }}
+        dragConstraints={constraintsRef}
+        dragElastic={0.15}
+        dragTransition={{ power: 0.2, bounceStiffness: 300, bounceDamping: 15 }}
+        whileDrag={{
+          scale: 1.02,
+          opacity: 0.6,
+          cursor: "grabbing",
+        }}
+        className="relative z-10 w-full max-w-3xl animate-[member-popup-show_300ms_ease-out] cursor-grab"
+      >
         <audio
           ref={audioRef}
           src={backgroundAudioSrc}
@@ -188,7 +208,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
           </div>
 
         </div>
-      </div>
+      </motion.div>
     </div>,
     document.body
   )
