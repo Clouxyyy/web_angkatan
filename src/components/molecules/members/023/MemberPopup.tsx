@@ -54,7 +54,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
       onClick={onClose}
       className="absolute inset-0 bg-[#08111d]/85 backdrop-blur-sm"
     />
-<div className="pointer-events-none fixed left-[-250px] top-1/2 z-[90] -translate-y-1/2 opacity-90">
+<div className="pointer-events-none fixed left-[-250px] top-1/2 z-[90] -translate-y-1/2 opacity-90 hidden 2xl:block">
   <Image
     src={Civ1}
     alt=""
@@ -66,7 +66,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
 
 {/* Leader Kanan */}
       {/* Leader Kanan */}
-<div className="pointer-events-none fixed right-[-50px] top-1/2 z-[90] -translate-y-1/2 opacity-90">
+<div className="pointer-events-none fixed right-[-50px] top-1/2 z-[90] -translate-y-1/2 opacity-90 hidden 2xl:block">
   <Image
     src={Civ2}
     alt=""
