@@ -27,6 +27,14 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const constraintsRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isDraggable, setIsDraggable] = useState(false)
+
+  useEffect(() => {
+    const checkDraggable = () => setIsDraggable(window.innerWidth >= 640)
+    checkDraggable()
+    window.addEventListener('resize', checkDraggable)
+    return () => window.removeEventListener('resize', checkDraggable)
+  }, [])
 
   const x = useMotionValue(0)
   const xVelocity = useVelocity(x)
@@ -122,8 +130,8 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
       />
 
       <motion.div
-        drag
-        style={{ x, rotate: smoothRotate }}
+        drag={isDraggable}
+        style={{ x: isDraggable ? x : 0, rotate: isDraggable ? smoothRotate : 0 }}
         dragConstraints={constraintsRef}
         dragElastic={0.15}
         dragTransition={{ power: 0.2, bounceStiffness: 300, bounceDamping: 15 }}
@@ -131,8 +139,9 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
           scale: 1.02,
           opacity: 0.6,
           cursor: "grabbing",
+          filter: "brightness(1.2) drop-shadow(0 0 30px rgba(56, 189, 248, 0.6))",
         }}
-        className="relative z-10 w-full max-w-3xl animate-[member-popup-show_300ms_ease-out] cursor-grab"
+        className={`relative z-10 w-full max-w-3xl animate-[member-popup-show_300ms_ease-out] ${isDraggable ? 'cursor-grab' : ''}`}
       >
         <audio
           ref={audioRef}
