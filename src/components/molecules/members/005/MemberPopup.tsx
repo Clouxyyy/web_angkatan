@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import Image from 'next/image'
 
 import { createPortal } from 'react-dom'
+
+import { motion, useMotionValue, useVelocity, useTransform, useSpring } from 'framer-motion'
 
 import Instagram from '@/components/atoms/button/InstagramButtonLink'
 import LinkedInButtonLink from '@/components/atoms/button/LinkedInButtonLink'
@@ -12,12 +14,72 @@ import SpotifyEmbed from '@/components/molecules/SpotifyEmbed'
 
 import ProfileImage from './image.jpeg'
 
+const backgroundVideoSrc = new URL('./supernatural.mp4', import.meta.url).href
+const backgroundAudioSrc = new URL('./supernatural.mp3', import.meta.url).href
+
 type MemberPopupProps = {
   isOpen: boolean
   onClose: () => void
 }
 
 const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const constraintsRef = useRef<HTMLDivElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isDraggable, setIsDraggable] = useState(false)
+
+  useEffect(() => {
+    const checkDraggable = () => setIsDraggable(window.innerWidth >= 640)
+    checkDraggable()
+    window.addEventListener('resize', checkDraggable)
+    return () => window.removeEventListener('resize', checkDraggable)
+  }, [])
+
+  const x = useMotionValue(0)
+  const xVelocity = useVelocity(x)
+  const rotateVelocity = useTransform(xVelocity, [-800, 800], [-8, 8])
+  const smoothRotate = useSpring(rotateVelocity, { damping: 15, stiffness: 200 })
+
+  useEffect(() => {
+    const audio = audioRef.current
+    const video = videoRef.current
+    if (!audio) return
+
+    audio.volume = 0.2
+
+    if (!isOpen) {
+      audio.pause()
+      audio.currentTime = 0
+      if (video) {
+        video.pause()
+        video.currentTime = 0
+      }
+      return
+    }
+
+    audio.currentTime = 0
+    if (video) video.currentTime = 0
+
+    audio.play().catch(() => { })
+    if (video) video.play().catch(() => { })
+  }, [isOpen])
+
+  const toggleAudio = () => {
+    const audio = audioRef.current
+    const video = videoRef.current
+    if (!audio) return
+
+    if (isPlaying) {
+      audio.pause()
+      if (video) video.pause()
+      setIsPlaying(false)
+    } else {
+      audio.play().then(() => setIsPlaying(true)).catch(() => { })
+      if (video) video.play().catch(() => { })
+    }
+  }
+
   useEffect(() => {
     if (!isOpen) {
       return
@@ -44,83 +106,118 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
 
   return createPortal(
     // PADA BAGIAN INI KAMU BOLEH MENGUBAH STYLE SESUKA HATI KAMU, TAPI JANGAN UBAH STRUKTUR DAN FUNGSI DARI KODE INI AGAR FUNGSI POPUP TETAP BERJALAN DENGAN BAIK
-    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-hidden px-4 backdrop-blur-md">
+    <div ref={constraintsRef} className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="h-full w-full object-cover object-[15%_center] sm:object-center"
+        >
+          <source src={backgroundVideoSrc} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
+
       <button
         type="button"
         aria-label="Close member detail"
         onClick={onClose}
-        className="absolute inset-0 bg-slate-900/30 transition-opacity"
+        className="fixed inset-0 z-0"
       />
 
-      <div className="relative z-10 h-[100dvh] max-h-[100dvh] w-full max-w-2xl animate-[member-popup-show_200ms_ease-out] overflow-y-auto rounded-[2rem] border-[6px] border-white bg-gradient-to-b from-sky-50 to-white p-6 shadow-[0_20px_50px_-12px_rgba(2,132,199,0.2)] sm:p-8">
+      <motion.div
+        drag={isDraggable}
+        style={{ x: isDraggable ? x : 0, rotate: isDraggable ? smoothRotate : 0 }}
+        dragConstraints={constraintsRef}
+        dragElastic={0.15}
+        dragTransition={{ power: 0.2, bounceStiffness: 300, bounceDamping: 15 }}
+        whileDrag={{
+          scale: 1.02,
+          opacity: 0.6,
+          cursor: "grabbing",
+          filter: "brightness(1.2) drop-shadow(0 0 30px rgba(56, 189, 248, 0.6))",
+        }}
+        className={`relative z-10 w-full max-w-3xl animate-[member-popup-show_300ms_ease-out] ${isDraggable ? 'cursor-grab' : ''}`}
+      >
+        <audio
+          ref={audioRef}
+          src={backgroundAudioSrc}
+          loop
+          preload="auto"
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+        />
 
-        {/* Decorative Glow Backgrounds */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-64 w-2/3 rounded-full bg-sky-200/40 blur-[80px] pointer-events-none" />
+        <div className="relative flex max-h-[85dvh] flex-col overflow-y-auto overflow-x-hidden rounded-2xl border border-sky-400/20 bg-[#050f14]/90 shadow-[0_0_40px_rgba(56,189,248,0.1)] sm:max-h-none sm:flex-row sm:overflow-hidden">
 
-        <button
-          type="button"
-          aria-label="Close member detail"
-          onClick={onClose}
-          className="absolute top-5 right-5 sm:top-6 sm:right-6 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-600 transition-all duration-300 hover:bg-sky-200 hover:text-sky-800 hover:rotate-90 shadow-sm"
-        >
-          ✕
-        </button>
-
-        <div className="relative z-10">
-          <div className="group mb-6 overflow-hidden rounded-[1.5rem] border-[4px] border-white shadow-sm bg-white">
-            <Image src={ProfileImage} alt="Profile Image" className="h-[22rem] sm:h-[28rem] w-full object-cover object-center transition-transform duration-700 group-hover:scale-105" />
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleAudio}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs text-white transition-colors hover:bg-white/20"
+            >
+              {isPlaying ? '🔊' : '🔇'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-sm text-white transition-colors hover:bg-white/20"
+            >
+              ✕
+            </button>
           </div>
 
-          <div className="pr-10">
-            {/* UBAH NAMA ANDA */}
-            <h2 className="text-4xl sm:text-5xl font-black text-sky-400 drop-shadow-[0_0_12px_rgba(56,189,248,0.4)]">Umar</h2>
-            {/* UBAH NRP DAN ASAL */}
-            <p className="mt-2 text-sm sm:text-base font-bold tracking-wide text-slate-500">5027251005 - Semarang</p>
-          </div>
-
-          <div className="mt-5 flex gap-3">
-            {/* UBAH USERNAME INSTAGRAM */}
-            <div className="flex items-center justify-center rounded-full bg-white p-1 shadow-sm border-[3px] border-sky-100 hover:-translate-y-1 transition-transform duration-300 [&_a]:!text-sky-400 hover:[&_a]:!text-sky-500">
-              <Instagram username="umarbaharun" />
+          <div className="relative flex w-full flex-col justify-center p-5 pb-0 sm:w-2/5 sm:p-8 sm:pr-0">
+            <div className="relative h-64 w-full overflow-hidden rounded-2xl shadow-2xl ring-1 ring-sky-400/30 sm:h-full sm:min-h-[20rem]">
+              <Image
+                src={ProfileImage}
+                alt="Profile Image"
+                className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 hover:scale-105"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
-            {/* UBAH USERNAME LINKEDIN */}
-            <div className="flex items-center justify-center rounded-full bg-white p-1 shadow-sm border-[3px] border-sky-100 hover:-translate-y-1 transition-transform duration-300 [&_a]:!text-sky-400 hover:[&_a]:!text-sky-500">
-              <LinkedInButtonLink username="umarhyl" />
-            </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="group relative overflow-hidden rounded-[1.25rem] bg-sky-100/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-sky-100 hover:shadow-lg hover:shadow-sky-200/40">
-              <div className="relative z-10">
-                {/* UBAH HOBI KAMU */}
-                <p className="text-[11px] font-black tracking-widest text-sky-700 uppercase">✦ HOBI</p>
-                <p className="mt-2 text-lg font-bold text-sky-950">Masak</p>
+          <div className="flex flex-1 flex-col p-5 sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-3xl font-semibold tracking-tight text-sky-50">Umar</h2>
+              <p className="mt-1 text-sm font-medium text-sky-200/80">5027251005 • Semarang</p>
+            </div>
+
+            <div className="mb-6 flex gap-3">
+              <div className="rounded-full bg-sky-400/10 p-2 transition-colors hover:bg-sky-400/20 [&_a]:!text-sky-200 hover:[&_a]:!text-white">
+                <Instagram username="umarbaharun" />
+              </div>
+              <div className="rounded-full bg-sky-400/10 p-2 transition-colors hover:bg-sky-400/20 [&_a]:!text-sky-200 hover:[&_a]:!text-white">
+                <LinkedInButtonLink username="umarhyl" />
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-[1.25rem] bg-sky-100/60 p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-sky-100 hover:shadow-lg hover:shadow-sky-200/40">
-              <div className="relative z-10">
-                {/* UBAH FUNFACT KAMU */}
-                <p className="text-[11px] font-black tracking-widest text-sky-700 uppercase">✦ FUN FACT</p>
-                <p className="mt-2 text-lg font-bold text-sky-950">Gwe Fans JKT</p>
+            <div className="mb-6 grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-sky-400">Hobi</p>
+                <p className="mt-1 text-sm text-sky-100">Masak & Membaca</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-sky-400">Fun Fact</p>
+                <p className="mt-1 text-sm text-sky-100">Fans JKT48</p>
               </div>
             </div>
-          </div>
 
-          <div className="group mt-4 relative overflow-hidden rounded-[1.25rem] bg-sky-100/60 p-5 transition-all duration-300 hover:bg-sky-100 hover:shadow-lg hover:shadow-sky-200/40">
-            <div className="relative z-10">
-              {/* UBAH LAGU FAVORIT KAMU */}
-              <p className="text-[11px] font-black tracking-widest text-sky-700 uppercase">✦ FAVORITE SONG</p>
-              <p className="mt-2 mb-4 text-lg font-bold text-sky-950">Supernatural</p>
-
-              {/* UBAH URL SPOTIFY KAMU DENGAN LAGU FAVORIT MU */}
-              <div className="rounded-xl overflow-hidden shadow-sm transition-transform duration-300 group-hover:scale-[1.01] bg-white ring-4 ring-white">
+            <div className="mt-auto">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-sky-400">Lagu Favorit</p>
+              <div className="rounded-xl ring-1 ring-sky-400/20">
                 <SpotifyEmbed spotifyUrl="https://open.spotify.com/track/142PiXzA84lmEw2RstFHFa?si=9a02a710ab7c4655" />
               </div>
             </div>
           </div>
+
         </div>
-      </div>
+      </motion.div>
     </div>,
     document.body
   )

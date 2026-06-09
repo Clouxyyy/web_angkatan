@@ -209,7 +209,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
       let step = 0
       to.volume = 0
       to.currentTime = 0
-      to.play().catch(() => {})
+      to.play().catch(() => { })
       const iv = setInterval(() => {
         step++
         const progress = step / steps
@@ -223,10 +223,10 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
       }, stepTime)
     }
 
-    glitchAudio.play().catch(() => {})
+    glitchAudio.play().catch(() => { })
     glitchAudio.onended = () => {
       bgA.volume = TARGET_VOL
-      bgA.play().catch(() => {})
+      bgA.play().catch(() => { })
       bgA.onended = () => {
         fadeAudio(bgA, bgB)
         bgActiveRef.current = 'B'
@@ -257,7 +257,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
 
   return createPortal(
     // PADA BAGIAN INI KAMU BOLEH MENGUBAH STYLE SESUKA HATI KAMU, TAPI JANGAN UBAH STRUKTUR DAN FUNGSI DARI KODE INI AGAR FUNGSI POPUP TETAP BERJALAN DENGAN BAIK
-    <div className="group fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4">
+    <div className="group fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4 py-[5dvh]">
       <button
         type="button"
         aria-label="Open YouTube"
@@ -301,7 +301,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
       </button>
 
       <div
-        className="relative z-10 max-h-[100dvh] w-full max-w-[720px] animate-[member-popup-show_200ms_ease-out] overflow-y-auto rounded-2xl border-2 p-6 shadow-xl sm:p-8"
+        className="relative z-10 max-h-[90dvh] w-full max-w-[720px] animate-[member-popup-show_200ms_ease-out] overflow-y-auto rounded-2xl border-2 p-6 shadow-xl sm:p-8"
         style={{
           fontFamily: "'JetBrains Mono', monospace",
           backgroundColor: '#0a1628',

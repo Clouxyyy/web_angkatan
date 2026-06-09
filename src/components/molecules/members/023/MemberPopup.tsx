@@ -47,14 +47,14 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
     // PADA BAGIAN INI KAMU BOLEH MENGUBAH STYLE SESUKA HATI KAMU, TAPI JANGAN UBAH STRUKTUR DAN FUNGSI DARI KODE INI AGAR FUNGSI POPUP TETAP BERJALAN DENGAN BAIK
 
   
-  <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4">
+  <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4 py-[5dvh]">
     <button
       type="button"
       aria-label="Close member detail"
       onClick={onClose}
       className="absolute inset-0 bg-[#08111d]/85 backdrop-blur-sm"
     />
-<div className="pointer-events-none fixed left-[-250px] top-1/2 z-[90] -translate-y-1/2 opacity-90">
+<div className="pointer-events-none fixed left-[-250px] top-1/2 z-[90] -translate-y-1/2 opacity-90 hidden 2xl:block">
   <Image
     src={Civ1}
     alt=""
@@ -66,7 +66,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
 
 {/* Leader Kanan */}
       {/* Leader Kanan */}
-<div className="pointer-events-none fixed right-[-50px] top-1/2 z-[90] -translate-y-1/2 opacity-90">
+<div className="pointer-events-none fixed right-[-50px] top-1/2 z-[90] -translate-y-1/2 opacity-90 hidden 2xl:block">
   <Image
     src={Civ2}
     alt=""
@@ -78,7 +78,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
     <div
       className="
         relative z-10
-        max-h-[100dvh]
+        max-h-[90dvh]
         w-full
         max-w-[920px]
         overflow-y-auto
