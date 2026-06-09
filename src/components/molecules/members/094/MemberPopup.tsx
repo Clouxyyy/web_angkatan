@@ -334,7 +334,7 @@ const MemberPopup = ({ isOpen, onClose }: MemberPopupProps) => {
 
       {/* Main Responsive Frame Canvas */}
       <div 
-        className="custom-scrollbar relative z-20 max-h-[90dvh] w-full max-w-[720px] overflow-y-auto overscroll-contain rounded-2xl bg-black shadow-[0_0_50px_rgba(255,69,0,0.25)] transition-all duration-300 ease-out"
+        className="custom-scrollbar relative z-20 h-[90dvh] w-full max-w-[720px] overflow-y-auto overscroll-contain rounded-2xl bg-black shadow-[0_0_50px_rgba(255,69,0,0.25)] transition-all duration-300 ease-out"
       >
 
         {/* ========================================================= */}

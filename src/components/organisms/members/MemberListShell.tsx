@@ -170,8 +170,8 @@ const MemberListShell = ({ children }: MemberListShellProps) => {
         <div className="relative w-full">
           <Image src={CloudBawah} alt="cloud bawah" aria-hidden="true" className="w-full opacity-40" />
 
-          <Star className="absolute top-[50%] left-24" />
-          <Star className="absolute top-[20%] right-24" />
+          <Star className="absolute top-[50%] left-24 hidden lg:block" />
+          <Star className="absolute top-[20%] right-24 w-20 md:w-32" />
         </div>
       </div>
 
